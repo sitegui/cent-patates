@@ -57,4 +57,13 @@ For our supervised learning we'll need data, lots of! The French lottery has not
 2. from March 2017 to February 2019: `raw_data/loto_201703.zip`
 3. after February 2019: `raw_data/loto_201902.zip`
 
-The is some boring work involved in unzipping, reformatting and merging all this data into something easier to use. I'll spare you with the details of the `unzip_reformat_merge.py` file and show you part of the output (available at `data/data.csv`).
+The is some boring work involved in unzipping, reformatting and merging all this data into something easier to use. I'll spare you with the details of the `unzip_reformat_merge.py` file and show you part of the output (available at `data/data.csv`):
+
+```csv
+date,ball_1,ball_2,ball_3,ball_4,ball_5,lucky_ball,wins_5_1,wins_5_0,wins_1_1_and_0_1
+04/03/2017,28,14,37,32,4,4,0,1,585454
+01/03/2017,33,31,16,46,20,5,0,0,494834
+27/02/2017,3,37,16,17,47,5,0,0,396176
+```
+
+The columns from `ball_1` to `ball_5` represent the 5 "normal" numbers. `wins_5_1` represents the number of winners that shared the jackpot, `wins_5_0` represents the winners of the second prize (100 000.00 €) and `wins_1_1_and_0_1` the number of winners of the smallest prize (2.20 €). The other categories changed a bit overtime, so we'll stick to these ones.
