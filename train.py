@@ -100,9 +100,18 @@ train_input, test_input, train_output, test_output = \
 print('Will train with {} and test with {} samples'.format(
     len(train_input), len(test_input)))
 
-print(model.input)
-model.fit(train_input, train_output, epochs=1000,
-          callbacks=[tf.keras.callbacks.EarlyStopping('loss', patience=5)])
+model.fit(
+    train_input,
+    train_output,
+    validation_data=(test_input, test_output),
+    epochs=1000,
+    callbacks=[
+        tf.keras.callbacks.EarlyStopping('loss', patience=5),
+        tf.keras.callbacks.TensorBoard(
+            histogram_freq=1
+        )
+    ]
+)
 
 print(model.evaluate(test_input, test_output))
 
