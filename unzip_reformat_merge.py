@@ -34,8 +34,10 @@ def handle_before_2017(df):
         'nombre_de_gagnant_au_rang5': 'wins_2_1_and_2_0',
         'nombre_de_gagnant_au_rang6': 'wins_1_1_and_0_1'
     }
-    df = df.rename(columns=columns)
-    return df[list(columns.values())]
+    new_df = df.rename(columns=columns)[list(columns.values())]
+    new_df['jackpot'] = df['rapport_du_rang1'] * \
+        df['nombre_de_gagnant_au_rang1'].clip(1)
+    return new_df
 
 
 def handle_after_2017(df):
@@ -58,6 +60,8 @@ def handle_after_2017(df):
         df['nombre_de_gagnant_au_rang6']
     new_df['wins_2_1_and_2_0'] = df['nombre_de_gagnant_au_rang7'] + \
         df['nombre_de_gagnant_au_rang8']
+    new_df['jackpot'] = df['rapport_du_rang1'] * \
+        df['nombre_de_gagnant_au_rang1'].clip(1)
     return new_df
 
 
