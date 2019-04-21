@@ -58,3 +58,10 @@ model.fit(
 )
 
 model.save('results/model.h5', include_optimizer=False)
+normal_probs, lucky_probs = model.get_layer('gather_probs_layer').get_probs()
+normal_probs = pd.Series(normal_probs, index=np.arange(
+    1, 50))
+lucky_probs = pd.Series(lucky_probs, index=np.arange(
+    1, 11))
+normal_probs.to_csv('results/normal_probs.csv', header=False)
+lucky_probs.to_csv('results/lucky_probs.csv', header=False)
