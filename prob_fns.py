@@ -41,7 +41,7 @@ def _simple_prob(good_probs, num_good):
     """
     @param good_probs: (Tensor float32 (-1, 5))
     @para num_good: (int) between 0 and 5 (inclusive)
-    @returns (Tensor float32 (-1,))
+    @returns (Tensor float32 (-1, 1))
     """
     # Average prob of bad normal balls
     avg_bad_prob = (1 - tf.reduce_sum(good_probs, axis=1)) / 44
@@ -50,7 +50,7 @@ def _simple_prob(good_probs, num_good):
         # Special case of _simple_prob() for num_good=0
         rho = avg_bad_prob
         denominator = (1-rho) * (1-2*rho) * (1-3*rho) * (1-4*rho)
-        return comb(44, 5) * 120 * tf.pow(avg_bad_prob, 5) / denominator
+        return tf.reshape(comb(44, 5) * 120 * tf.pow(avg_bad_prob, 5) / denominator, (-1, 1))
 
     result = 0
     num_bad = 5 - num_good
@@ -68,6 +68,7 @@ def _simple_prob(good_probs, num_good):
         rho = tf.reduce_mean(probs, axis=1)
         denominator = (1-rho) * (1-2*rho) * (1-3*rho) * (1-4*rho)
 
-        result += 120 * tf.reduce_prod(probs, axis=1) / denominator
+        result += 120 * \
+            tf.reduce_prod(probs, axis=1) / denominator
 
-    return comb(44, num_bad) * result
+    return tf.reshape(comb(44, num_bad) * result, (-1, 1))

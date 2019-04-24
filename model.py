@@ -1,5 +1,5 @@
 import tensorflow as tf
-from prob_fn import P1, P2, P3, P3, P4, P5, P6
+from prob_fns import P1, P2, P3, P3, P4, P5, P6
 
 # https://www.tensorflow.org/guide/keras#custom_layers
 # https://www.tensorflow.org/api_docs/python/tf/keras/layers/Layer
@@ -62,10 +62,10 @@ class CalculatePrizeProbs(tf.keras.layers.Layer):
     def call(self, inputs):
         # Extract the 5 good and lucky probs from each sample
         good_normal_probs = inputs[0]
-        good_lucky_prob = tf.reshape(inputs[1], (-1,))
+        good_lucky_prob = inputs[1]
 
         # Compute the probability of each prize level
-        return tf.stack([
+        return tf.concat([
             P1(good_normal_probs, good_lucky_prob),
             P2(good_normal_probs, good_lucky_prob),
             P3(good_normal_probs, good_lucky_prob),
