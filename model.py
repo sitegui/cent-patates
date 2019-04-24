@@ -1,6 +1,5 @@
 import tensorflow as tf
-import itertools
-from scipy.special import comb
+from prob_fn import P1, P2, P3, P3, P4, P5, P6
 
 # https://www.tensorflow.org/guide/keras#custom_layers
 # https://www.tensorflow.org/api_docs/python/tf/keras/layers/Layer
@@ -65,56 +64,15 @@ class CalculatePrizeProbs(tf.keras.layers.Layer):
         good_normal_probs = inputs[0]
         good_lucky_prob = tf.reshape(inputs[1], (-1,))
 
-        # Average prob of bad normal balls
-        avg_bad_normal_prob = (
-            1 - tf.reduce_sum(good_normal_probs, axis=1)) / 44
-
         # Compute the probability of each prize level
-        prob_5 = self._simple_prob(good_normal_probs, avg_bad_normal_prob, 5)
-        prize_1 = prob_5 * good_lucky_prob
-        prize_2 = prob_5 * (1 - good_lucky_prob)
-        prize_3 = self._simple_prob(good_normal_probs, avg_bad_normal_prob, 4)
-        prize_4 = self._simple_prob(good_normal_probs, avg_bad_normal_prob, 3)
-        prize_5 = self._simple_prob(good_normal_probs, avg_bad_normal_prob, 2)
-        prize_6 = (self._simple_prob(good_normal_probs, avg_bad_normal_prob, 1) +
-                   self._simple_prob_zero(avg_bad_normal_prob)) * \
-            good_lucky_prob
-
-        return tf.stack([prize_1, prize_2, prize_3, prize_4, prize_5, prize_6], axis=1)
-
-    def _simple_prob(self, good_probs, avg_bad_prob, num_good):
-        """
-        @param good_probs: (Tensor float32 (-1, 5))
-        @param avg_bad_prob: (Tensor float32 (-1,))
-        @para num_good: (int) between 1 and 5 (inclusive)
-        @returns (Tensor float32 (-1,))
-        """
-        with tf.name_scope('take_%d_good' % num_good):
-            result = 0
-            num_bad = 5 - num_good
-
-            # Sum over all possible combinations of 5 take `num_good`:
-            # 1. unstack() will split the initial tensor into 5 columns
-            # 2. combinations() will select `num_good` out of those
-            # 3. stack() will glue back into a single tensor
-            good_prob_columns = tf.unstack(good_probs, num=5, axis=1)
-            for sub_good_prob_columns in itertools.combinations(good_prob_columns, num_good):
-                probs = tf.stack(
-                    [*sub_good_prob_columns, *([avg_bad_prob] * num_bad)], axis=1)
-
-                # Calculate rho as the average of the probs on each sample
-                rho = tf.reduce_mean(probs, axis=1)
-                denominator = (1-rho) * (1-2*rho) * (1-3*rho) * (1-4*rho)
-
-                result += 120 * tf.reduce_prod(probs, axis=1) / denominator
-
-            return comb(44, num_bad) * result
-
-    def _simple_prob_zero(self, avg_bad_prob):
-        """ Special case of _simple_prob() for num_good=0 """
-        rho = avg_bad_prob
-        denominator = (1-rho) * (1-2*rho) * (1-3*rho) * (1-4*rho)
-        return comb(44, 5) * 120 * tf.pow(avg_bad_prob, 5) / denominator
+        return tf.stack([
+            P1(good_normal_probs, good_lucky_prob),
+            P2(good_normal_probs, good_lucky_prob),
+            P3(good_normal_probs, good_lucky_prob),
+            P4(good_normal_probs, good_lucky_prob),
+            P5(good_normal_probs, good_lucky_prob),
+            P6(good_normal_probs, good_lucky_prob)
+        ], axis=1)
 
 
 class CalculateExpectedPlayers(tf.keras.layers.Layer):
