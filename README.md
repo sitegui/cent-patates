@@ -140,6 +140,6 @@ model.fit(train_inputs, train_output)
 
 The trained model is persisted and loaded in a [notebook that displays the results](Results.ipynb). You should definitively check it, players have really strong preferences!! Some spoiler:
 
-![Comparison between draw frequency and player's bias](results/normal_grid.png)
+![Comparison between draw frequency and player's bias](loto-France/results/normal_grid.png)
 
-![Comparison between draw frequency and player's bias](results/lucky_grid.png)
+![Comparison between draw frequency and player's bias](loto-France/results/lucky_grid.png)
