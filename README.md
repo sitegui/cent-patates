@@ -31,31 +31,31 @@ To simplify our scope we'll assume that this distribution is kept constant from 
 
 ## Background: how the French lottery works
 
-I'll spare your time and pick the most important bits of the [30-page-long document](https://www.fdj.fr/static/contrib/files/pdf/2018-11-24_R%C3%A8glement_LOTO_0.pdf) for us here:
+I'll spare your time and pick the most important bits of the [37-page-long document](https://media.fdj.fr/static/contrib/files/pdf/reglement-loto.pdf) for us here:
 
 1. each player have to pick 5 numbers from 1 to 49 (inclusive) without replacement (that is, they can't repeat) and 1 number (called *lucky number*) from 1 to 10 (inclusive)
 2. the order doesn't matter
 3. after all players have placed their bets, the house does the same (5 numbers from 1 to 49 and 1 number from 1 to 10)
-4. the jackpot is shared by players that get all 6 numbers right
-5. fixed prizes are offered in the following cases:
+4. the jackpot is shared by players that get all 6 numbers right. More prizes are offered in the following cases. The values and rules vary a lot, so I'll not describe them here.
 
-|                          |   | Correct "lucky" number     |              |
-|--------------------------|---|----------------------------|--------------|
-|                          |   | 1                          | 0            |
-| Correct "normal" numbers | 5 | Jackpot (≥ 2 000 000.00 €) | 100 000.00 € |
-|                          | 4 | 1 000.00 €                 | 500.00 €     |
-|                          | 3 | 50.00 €                    | 20.00 €      |
-|                          | 2 | 10.00 €                    | 5.00 €       |
-|                          | 1 | 2.20 €                     | -            |
-|                          | 0 | 2.20 €                     | -            |
+|                          |   | Correct "lucky" number |         |
+|--------------------------|---|------------------------|---------|
+|                          |   | Yes                    | No      |
+| Correct "normal" numbers | 5 | Jackpot (prize 1)      | prize 2 |
+|                          | 4 | prize 3                | prize 4 |
+|                          | 3 | prize 5                | prize 6 |
+|                          | 2 | prize 7                | prize 8 |
+|                          | 1 | prize 9                | -       |
+|                          | 0 | prize 9                | -       |
 
 ## Available data
 
-For our supervised learning we'll need data, lots of! The French lottery has not changed much since 6 October 2008, and they kindly release [historical data](https://www.fdj.fr/jeux-de-tirage/loto/) for the world to use. As of this date, they provide this data segmented into three files that are also available in this repo:
+For our supervised learning we'll need data, lots of! The French lottery has not changed much since 6 October 2008, and they kindly release [historical data](https://www.fdj.fr/jeux-de-tirage/loto/historique) for the world to use. As of this date, they provide this data segmented into four files that are also available in this repo:
 
 1. from October 2008 to March 2017: `raw_data/loto_200810.zip`
 2. from March 2017 to February 2019: `raw_data/loto_201703.zip`
-3. after February 2019: `raw_data/loto_201902.zip`
+3. from February 2019 to November 2019: `raw_data/loto_201902.zip`
+4. after November 2019: `raw_data/loto_201911.zip`
 
 The is some boring work involved in unzipping, reformatting and merging all this data into something easier to use. I'll spare you with the details of the `unzip_reformat_merge.py` file and show you part of the output (available at `data/data.csv`):
 
@@ -70,6 +70,7 @@ The columns from `ball_1` to `ball_5` represent the 5 "normal" numbers, `date` t
 *(FN1) before March 2017, this data is missing (provided as zero) when nobody won the jackpot*  
 *(FN2) the value of some prizes changed over time. This is the current rule*  
 *(FN3) even though there are currently nine prize categories, for compatibility with historical data before March 2017 we'll consider only six*
+*(FN 4) starting in November 2019 there's a second independent draw which is done by the house. Player can optionally enter this bet, but using the same numbers. In this study however, I'll ignore it for simplicity.*
 
 ## Modeling
 

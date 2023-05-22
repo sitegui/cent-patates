@@ -2,11 +2,12 @@
 
 import pandas as pd
 
-# Load all three CSV
+# Load all four CSVs
 # Pandas does all the hard work of unzipping and parsing the CSV
 df_2008 = pd.read_csv('raw_data/loto_200810.zip', sep=';')
 df_2017 = pd.read_csv('raw_data/loto_201703.zip', sep=';')
-df_2019 = pd.read_csv('raw_data/loto_201902.zip', sep=';')
+df_2019_02 = pd.read_csv('raw_data/loto_201902.zip', sep=';')
+df_2019_11 = pd.read_csv('raw_data/loto_201911.zip', sep=';')
 
 # From 2008 until 20017 the prize categories had different names:
 # old rang1 = 5 + 1 = new rang1
@@ -67,9 +68,10 @@ def handle_after_2017(df):
 
 df_2008 = handle_before_2017(df_2008)
 df_2017 = handle_after_2017(df_2017)
-df_2019 = handle_after_2017(df_2019)
+df_2019_02 = handle_after_2017(df_2019_02)
+df_2019_11 = handle_after_2017(df_2019_11)
 
-df = pd.concat([df_2008, df_2017, df_2019], sort=True)
+df = pd.concat([df_2008, df_2017, df_2019_02, df_2019_11], sort=True)
 path = 'data/data.csv'
 df.to_csv(path, index=False)
 
