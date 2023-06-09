@@ -29,11 +29,6 @@ class GatherProbsLayer(tf.keras.layers.Layer):
         self.log_lucky_probs = self.add_weight(
             'log_lucky_probs', (10,), dtype='float32')
 
-        # Transform the weights into valid probabilities, so that each element
-        # is between 0 and 1 and they all add up to 1
-        self.normal_probs = tf.math.softmax(self.log_normal_probs)
-        self.lucky_probs = tf.math.softmax(self.log_lucky_probs)
-
         super().build(input_shape)
 
     def call(self, inputs):
@@ -41,9 +36,14 @@ class GatherProbsLayer(tf.keras.layers.Layer):
         # Should actually perform the logic of applying the layer to the input
         # tensors (which should be passed in as the first argument).
 
+        # Transform the weights into valid probabilities, so that each element
+        # is between 0 and 1 and they all add up to 1
+        normal_probs = tf.math.softmax(self.log_normal_probs)
+        lucky_probs = tf.math.softmax(self.log_lucky_probs)
+
         # Convert to probability by indexing the layer's weights
-        good_normal_probs = tf.gather(self.normal_probs, inputs[0]-1)
-        good_lucky_prob = tf.gather(self.lucky_probs, inputs[1]-1)
+        good_normal_probs = tf.gather(normal_probs, inputs[0] - 1)
+        good_lucky_prob = tf.gather(lucky_probs, inputs[1] - 1)
         return [good_normal_probs, good_lucky_prob]
 
     def get_probs(self):

@@ -15,7 +15,7 @@ avg_winners = np.mean(train_output, axis=0)
 
 
 def custom_loss(y_true, y_pred):
-    normalized_error = (y_pred - y_true) / avg_winners
+    normalized_error = (y_pred - tf.cast(y_true, 'float32')) / avg_winners
     return tf.reduce_mean(tf.math.square(normalized_error), axis=1)
 
 
@@ -28,7 +28,7 @@ model.fit(
     callbacks=[
         tf.keras.callbacks.EarlyStopping('loss', patience=5),
         tf.keras.callbacks.TensorBoard(
-            log_dir='logs/' + time.strftime('%Y%m%d%H%M%S'),
+            log_dir='logs/' + time.strftime('%Y-%m-%d %H-%M-%S'),
             histogram_freq=1
         )
     ]
