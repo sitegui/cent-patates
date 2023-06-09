@@ -19,6 +19,30 @@ def custom_loss(y_true, y_pred):
     return tf.reduce_mean(tf.math.square(normalized_error), axis=1)
 
 
+class AccumulateEpochProbs(tf.keras.callbacks.Callback):
+
+    def __init__(self):
+        super().__init__()
+        self._epoch_normal_probs = []
+        self._epoch_lucky_probs = []
+
+    def on_epoch_begin(self, epoch, logs=None):
+        self._accumulate()
+
+    def on_train_end(self, logs=None):
+        self._accumulate()
+
+    def _accumulate(self):
+        normal_probs, lucky_probs = self.model.get_layer('gather_probs_layer').get_probs()
+        self._epoch_normal_probs.append(normal_probs)
+        self._epoch_lucky_probs.append(lucky_probs)
+
+    def epoch_probs(self):
+        return np.stack(self._epoch_normal_probs), np.stack(self._epoch_lucky_probs)
+
+
+accumulate_epoch_probs = AccumulateEpochProbs()
+
 model.compile(optimizer='adam', loss=[None, custom_loss])
 model.fit(
     train_inputs,
@@ -29,8 +53,8 @@ model.fit(
         tf.keras.callbacks.EarlyStopping('loss', patience=5),
         tf.keras.callbacks.TensorBoard(
             log_dir='logs/' + time.strftime('%Y-%m-%d %H-%M-%S'),
-            histogram_freq=1
-        )
+        ),
+        accumulate_epoch_probs,
     ]
 )
 
@@ -42,3 +66,7 @@ lucky_probs = pd.Series(lucky_probs, index=np.arange(
     1, 11))
 normal_probs.to_csv('results/normal_probs.csv', header=False)
 lucky_probs.to_csv('results/lucky_probs.csv', header=False)
+
+epoch_normal_probs, epoch_lucky_probs = accumulate_epoch_probs.epoch_probs()
+pd.DataFrame(epoch_normal_probs).to_csv('results/epoch_normal_probs.csv', header=False)
+pd.DataFrame(epoch_lucky_probs).to_csv('results/epoch_lucky_probs.csv', header=False)
