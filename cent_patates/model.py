@@ -1,5 +1,11 @@
+from typing import Tuple
+
+import numpy as np
 import tensorflow as tf
-from prob_fns import P1, P2, P3, P3, P4, P5, P6
+
+from cent_patates.prob_fns import (prob_1_1_and_0_1, prob_2_1_and_2_0, prob_3_1_and_3_0,
+                                   prob_4_1_and_4_0, prob_5_0, prob_5_1)
+
 
 # https://www.tensorflow.org/guide/keras#custom_layers
 # https://www.tensorflow.org/api_docs/python/tf/keras/layers/Layer
@@ -17,25 +23,12 @@ class GatherProbsLayer(tf.keras.layers.Layer):
     Output: [float32 (None, 5), float32 (None, 1)] represents each individual probability
     """
 
-    def build(self, input_shape):
-        # Called once from __call__, when we know the shapes of inputs and dtype
-        # Should have the calls to add_weight(), and then call the super's build()
-        # (which sets self.built = True, which is nice in case the user wants to
-        # call build() manually before the first __call__).
-
-        # Ask Keras to create the trainable weights
-        self.log_normal_probs = self.add_weight(
-            'log_normal_probs', (49,), dtype='float32')
-        self.log_lucky_probs = self.add_weight(
-            'log_lucky_probs', (10,), dtype='float32')
-
-        super().build(input_shape)
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.log_normal_probs = self.add_weight('log_normal_probs', (49,), dtype='float32')
+        self.log_lucky_probs = self.add_weight('log_lucky_probs', (10,), dtype='float32')
 
     def call(self, inputs):
-        # call(): Called in __call__ after making sure build() has been called once.
-        # Should actually perform the logic of applying the layer to the input
-        # tensors (which should be passed in as the first argument).
-
         # Transform the weights into valid probabilities, so that each element
         # is between 0 and 1 and they all add up to 1
         normal_probs = tf.math.softmax(self.log_normal_probs)
@@ -46,9 +39,10 @@ class GatherProbsLayer(tf.keras.layers.Layer):
         good_lucky_prob = tf.gather(lucky_probs, inputs[1] - 1)
         return [good_normal_probs, good_lucky_prob]
 
-    def get_probs(self):
+    def get_probs(self) -> Tuple[np.ndarray, np.ndarray]:
         """ Return probabilities for normal and lucky numbers as two numpy arrays """
-        return tf.math.softmax(self.log_normal_probs).numpy(), tf.math.softmax(self.log_lucky_probs).numpy()
+        return tf.math.softmax(self.log_normal_probs).numpy(), tf.math.softmax(
+            self.log_lucky_probs).numpy()
 
 
 class CalculatePrizeProbs(tf.keras.layers.Layer):
@@ -66,13 +60,14 @@ class CalculatePrizeProbs(tf.keras.layers.Layer):
 
         # Compute the probability of each prize level
         return tf.concat([
-            P1(good_normal_probs, good_lucky_prob),
-            P2(good_normal_probs, good_lucky_prob),
-            P3(good_normal_probs, good_lucky_prob),
-            P4(good_normal_probs, good_lucky_prob),
-            P5(good_normal_probs, good_lucky_prob),
-            P6(good_normal_probs, good_lucky_prob)
-        ], axis=1)
+            prob_5_1(good_normal_probs, good_lucky_prob),
+            prob_5_0(good_normal_probs, good_lucky_prob),
+            prob_4_1_and_4_0(good_normal_probs),
+            prob_3_1_and_3_0(good_normal_probs),
+            prob_2_1_and_2_0(good_normal_probs),
+            prob_1_1_and_0_1(good_normal_probs, good_lucky_prob)
+        ],
+            axis=1)
 
 
 class CalculateExpectedPlayers(tf.keras.layers.Layer):
@@ -92,23 +87,19 @@ class CalculateExpectedPlayers(tf.keras.layers.Layer):
         return [expected_players, expected_winners]
 
 
-# Build the model: define inputs
-good_numbers = tf.keras.layers.Input(shape=(5,), dtype='int32')
-lucky_number = tf.keras.layers.Input(shape=(1,), dtype='int32')
-prize_6_winners = tf.keras.layers.Input(shape=(1,), dtype='int32')
+def build_model() -> tf.keras.Model:
+    # Build the model: define inputs
+    good_numbers = tf.keras.layers.Input(shape=(5,), dtype='int32')
+    lucky_number = tf.keras.layers.Input(shape=(1,), dtype='int32')
+    prize_6_winners = tf.keras.layers.Input(shape=(1,), dtype='int32')
 
-# Build the model: define layers
-good_probs, lucky_prob = GatherProbsLayer()([good_numbers, lucky_number])
-prize_probs = CalculatePrizeProbs()([good_probs, lucky_prob])
-players, prize_winners = CalculateExpectedPlayers()(
-    [prize_6_winners, prize_probs])
+    # Build the model: define layers
+    good_probs, lucky_prob = GatherProbsLayer()([good_numbers, lucky_number])
+    prize_probs = CalculatePrizeProbs()([good_probs, lucky_prob])
+    players, prize_winners = CalculateExpectedPlayers()([prize_6_winners, prize_probs])
 
-# Build the model
-model = tf.keras.Model(inputs=[
-    good_numbers,
-    lucky_number,
-    prize_6_winners
-], outputs=[
-    players,
-    prize_winners
-])
+    # Build the model
+    return tf.keras.Model(
+        inputs=[good_numbers, lucky_number, prize_6_winners],
+        outputs=[players, prize_winners],
+    )
