@@ -144,3 +144,13 @@ The trained model is persisted and loaded in a [notebook that displays the resul
 ![Comparison between draw frequency and player's bias](results/normal_grid.png)
 
 ![Comparison between draw frequency and player's bias](results/lucky_grid.png)
+
+## How to run this project
+
+```shell
+pyenv virtualenv 3.10.6 cent-patates
+pip install -r requirements.txt
+python -m cent_patates.unzip_reformat_merge
+python -m cent_patates.train
+python -m cent_patates.plot_results
+```

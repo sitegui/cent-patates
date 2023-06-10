@@ -3,3 +3,5 @@
 logs
 __pycache__
 /.idea
+/.mypy_cache
+/results/epoch
