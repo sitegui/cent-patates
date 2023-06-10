@@ -6,7 +6,6 @@ import tensorflow as tf
 from cent_patates.prob_fns import (prob_1_1_and_0_1, prob_2_1_and_2_0, prob_3_1_and_3_0,
                                    prob_4_1_and_4_0, prob_5_0, prob_5_1)
 
-
 # https://www.tensorflow.org/guide/keras#custom_layers
 # https://www.tensorflow.org/api_docs/python/tf/keras/layers/Layer
 
@@ -25,8 +24,8 @@ class GatherProbsLayer(tf.keras.layers.Layer):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.log_normal_probs = self.add_weight('log_normal_probs', (49,), dtype='float32')
-        self.log_lucky_probs = self.add_weight('log_lucky_probs', (10,), dtype='float32')
+        self.log_normal_probs = self.add_weight('log_normal_probs', (49, ), dtype='float32')
+        self.log_lucky_probs = self.add_weight('log_lucky_probs', (10, ), dtype='float32')
 
     def call(self, inputs):
         # Transform the weights into valid probabilities, so that each element
@@ -67,7 +66,7 @@ class CalculatePrizeProbs(tf.keras.layers.Layer):
             prob_2_1_and_2_0(good_normal_probs),
             prob_1_1_and_0_1(good_normal_probs, good_lucky_prob)
         ],
-            axis=1)
+                         axis=1)
 
 
 class CalculateExpectedPlayers(tf.keras.layers.Layer):
@@ -89,9 +88,9 @@ class CalculateExpectedPlayers(tf.keras.layers.Layer):
 
 def build_model() -> tf.keras.Model:
     # Build the model: define inputs
-    good_numbers = tf.keras.layers.Input(shape=(5,), dtype='int32')
-    lucky_number = tf.keras.layers.Input(shape=(1,), dtype='int32')
-    prize_6_winners = tf.keras.layers.Input(shape=(1,), dtype='int32')
+    good_numbers = tf.keras.layers.Input(shape=(5, ), dtype='int32')
+    lucky_number = tf.keras.layers.Input(shape=(1, ), dtype='int32')
+    prize_6_winners = tf.keras.layers.Input(shape=(1, ), dtype='int32')
 
     # Build the model: define layers
     good_probs, lucky_prob = GatherProbsLayer()([good_numbers, lucky_number])

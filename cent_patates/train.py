@@ -55,7 +55,8 @@ class AccumulateEpochProbs(tf.keras.callbacks.Callback):
             ],
         )
         epoch_prize_probs.insert(0, 'date', epoch_prize_dates)
-        epoch_prize_probs.insert(0, 'epoch', epoch_prize_probs.index.values // model_data.num_examples)
+        epoch_prize_probs.insert(0, 'epoch',
+                                 epoch_prize_probs.index.values // model_data.num_examples)
 
         epoch_prize_wins = pd.DataFrame(
             np.concatenate(self._epoch_prize_wins, axis=0),
@@ -68,7 +69,8 @@ class AccumulateEpochProbs(tf.keras.callbacks.Callback):
             ],
         )
         epoch_prize_wins.insert(0, 'date', epoch_prize_dates)
-        epoch_prize_wins.insert(0, 'epoch', epoch_prize_wins.index.values // model_data.num_examples)
+        epoch_prize_wins.insert(0, 'epoch',
+                                epoch_prize_wins.index.values // model_data.num_examples)
 
         return (
             pd.DataFrame(np.stack(self._epoch_normal_probs), columns=np.arange(1, 50)),
@@ -87,11 +89,9 @@ if __name__ == '__main__':
 
     avg_wins = np.mean(model_data.train_output, axis=0)
 
-
     def custom_loss(y_true, y_pred):
         normalized_error = (y_pred - tf.cast(y_true, 'float32')) / avg_wins
         return tf.reduce_mean(tf.math.square(normalized_error), axis=1)
-
 
     accumulate_epoch_probs = AccumulateEpochProbs()
 
@@ -101,7 +101,7 @@ if __name__ == '__main__':
         model_data.train_inputs,
         model_data.train_output,
         validation_data=(model_data.test_inputs, model_data.test_output),
-        epochs=3,
+        epochs=1000,
         callbacks=[
             tf.keras.callbacks.EarlyStopping('loss', patience=10),
             tf.keras.callbacks.TensorBoard(),
