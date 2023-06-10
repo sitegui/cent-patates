@@ -92,14 +92,14 @@ if __name__ == '__main__':
 
     model_data = ModelData()
 
-    normal_frequency = Counter({n: 0 for n in range(1, 50)})
-    lucky_frequency = Counter({n: 0 for n in range(1, 11)})
+    normal_frequency_counter = Counter({n: 0 for n in range(1, 50)})
+    lucky_frequency_counter = Counter({n: 0 for n in range(1, 11)})
     for i in range(1, 6):
-        normal_frequency.update(model_data.full_df[f'ball_{i}'].values)
-    lucky_frequency.update(model_data.full_df['lucky_ball'].values)
-    normal_frequency = pd.Series(normal_frequency)
+        normal_frequency_counter.update(model_data.full_df[f'ball_{i}'].values)
+    lucky_frequency_counter.update(model_data.full_df['lucky_ball'].values)
+    normal_frequency = pd.Series(normal_frequency_counter)
     normal_frequency /= normal_frequency.sum()
-    lucky_frequency = pd.Series(lucky_frequency)
+    lucky_frequency = pd.Series(lucky_frequency_counter)
     lucky_frequency /= lucky_frequency.sum()
 
     top_5 = normal_frequency.nlargest(5)
