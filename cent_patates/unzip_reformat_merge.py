@@ -2,13 +2,6 @@
 
 import pandas as pd
 
-# Load all four CSVs
-# Pandas does all the hard work of unzipping and parsing the CSV
-df_2008 = pd.read_csv('raw_data/loto_200810.zip', sep=';')
-df_2017 = pd.read_csv('raw_data/loto_201703.zip', sep=';')
-df_2019_02 = pd.read_csv('raw_data/loto_201902.zip', sep=';')
-df_2019_11 = pd.read_csv('raw_data/loto_201911.zip', sep=';')
-
 # From 2008 until 20017 the prize categories had different names:
 # old rang1 = 5 + 1 = new rang1
 # old rang2 = 5 + 0 = new rang2
@@ -19,7 +12,7 @@ df_2019_11 = pd.read_csv('raw_data/loto_201911.zip', sep=';')
 # We'll use the historical 6 categories and rename them
 
 
-def handle_before_2017(df):
+def handle_before_2017(df: pd.DataFrame) -> pd.DataFrame:
     columns = {
         'date_de_tirage': 'date',
         'boule_1': 'ball_1',
@@ -37,11 +30,12 @@ def handle_before_2017(df):
     }
     new_df = df.rename(columns=columns)[list(columns.values())]
     new_df['jackpot'] = df['rapport_du_rang1'] * \
-        df['nombre_de_gagnant_au_rang1'].clip(1)
+                        df['nombre_de_gagnant_au_rang1'].clip(1)
+    new_df['date'] = pd.to_datetime(df['date_de_tirage'], dayfirst=True)
     return new_df
 
 
-def handle_after_2017(df):
+def handle_after_2017(df: pd.DataFrame) -> pd.DataFrame:
     columns = {
         'date_de_tirage': 'date',
         'boule_1': 'ball_1',
@@ -56,26 +50,32 @@ def handle_after_2017(df):
     }
     new_df = df.rename(columns=columns)[list(columns.values())]
     new_df['wins_4_1_and_4_0'] = df['nombre_de_gagnant_au_rang3'] + \
-        df['nombre_de_gagnant_au_rang4']
+                                 df['nombre_de_gagnant_au_rang4']
     new_df['wins_3_1_and_3_0'] = df['nombre_de_gagnant_au_rang5'] + \
-        df['nombre_de_gagnant_au_rang6']
+                                 df['nombre_de_gagnant_au_rang6']
     new_df['wins_2_1_and_2_0'] = df['nombre_de_gagnant_au_rang7'] + \
-        df['nombre_de_gagnant_au_rang8']
+                                 df['nombre_de_gagnant_au_rang8']
     new_df['jackpot'] = df['rapport_du_rang1'] * \
-        df['nombre_de_gagnant_au_rang1'].clip(1)
+                        df['nombre_de_gagnant_au_rang1'].clip(1)
+    new_df['date'] = pd.to_datetime(df['date_de_tirage'], dayfirst=True)
     return new_df
 
 
-df_2008 = handle_before_2017(df_2008)
-df_2017 = handle_after_2017(df_2017)
-df_2019_02 = handle_after_2017(df_2019_02)
-df_2019_11 = handle_after_2017(df_2019_11)
+if __name__ == '__main__':
+    # Load all four CSVs
+    # Pandas does all the hard work of unzipping and parsing the CSV
+    df_2008 = pd.read_csv('raw_data/loto_200810.zip', sep=';')
+    df_2017 = pd.read_csv('raw_data/loto_201703.zip', sep=';')
+    df_2019_02 = pd.read_csv('raw_data/loto_201902.zip', sep=';')
+    df_2019_11 = pd.read_csv('raw_data/loto_201911.zip', sep=';')
 
-df = pd.concat([df_2008, df_2017, df_2019_02, df_2019_11], sort=True)
-path = 'data/data.csv'
-df.to_csv(path, index=False)
+    df_2008 = handle_before_2017(df_2008)
+    df_2017 = handle_after_2017(df_2017)
+    df_2019_02 = handle_after_2017(df_2019_02)
+    df_2019_11 = handle_after_2017(df_2019_11)
 
-print('Wrote {0} lines into {1}'.format(len(df), path))
+    df = pd.concat([df_2008, df_2017, df_2019_02, df_2019_11], sort=True).sort_values('date')
+    path = 'data/data.csv'
+    df.to_csv(path, index=False)
 
-print('Some stats for the fun of it:')
-print(df.describe())
+    print('Wrote {0} draw events into {1}'.format(len(df), path))

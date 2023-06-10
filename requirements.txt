@@ -1,6 +1,10 @@
 matplotlib==3.7.1
 notebook==6.5.4
 pandas==2.0.2
-pydot==1.4.2
 scikit-learn==1.2.2
 tensorflow==2.12.0
+
+# Dev requirements
+isort==5.12.0
+mypy==1.3.0
+yapf==0.33.0
